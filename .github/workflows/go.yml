@@ -40,4 +40,5 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: "phantomsocks-pcap,phantomsocks-original,phantomsocks-rawsocket"
+        tag: v1.0
         token: ${{ secrets.GITHUB_TOKEN }}
