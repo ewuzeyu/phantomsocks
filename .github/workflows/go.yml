@@ -6,12 +6,19 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GOACTION }}
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: $(( secrets.GITHUB_TOKEN }}
     strategy:
       matrix:
-        target_arch: [aarch64, arm64, x86_64]
+        include:
+          - goarch: amd64
+            goos: linux
     steps:
     - uses: actions/checkout@v4.1.7
 
@@ -27,49 +34,13 @@ jobs:
         go build -o ./phantomsocks-pcap -tags pcap
         go build -o ./phantomsocks-rawsocket -tags rawsocket
     - name: upload
-      uses: actions/upload-artifact@v4
+      uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        name: linuxps-${{ matrix.target_arch }}
-        path: ./phantomsocks*
-        
-  build-windows:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v4.1.7
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag:  ${{ steps.version.outputs.version }}
+        prerelease: true
+        title: "Development Build"
+        files: |
+            ./nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}.tgz 
 
-    - name: Set up Go
-      uses: actions/setup-go@v5.0.1
-      with:
-        go-version: 1.19
-
-    - name: Build
-      run: |
-        go build -v ./...
-        go build -v -tags pcap ./...
-        go build -v -tags windivert ./...
-    - name: upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: winps-${{ matrix.target_arch }}
-        path: ./phantomsocks*
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v4.1.7
-
-    - name: Set up Go
-      uses: actions/setup-go@v5.0.1
-      with:
-        go-version: 1.19
-
-    - name: Build
-      run: |
-        go build -v ./...
-        go build -v -tags pcap ./...
-    - name: upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: macps-${{ matrix.target_arch }}
-        path: ./phantomsocks*
 
