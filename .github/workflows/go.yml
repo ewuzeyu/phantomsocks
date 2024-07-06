@@ -6,12 +6,15 @@ on:
   pull_request:
     branches: [ main ]
 
+
 env:
   GITHUB_TOKEN: ${{ secrets.GOACTION }}
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       GITHUB_TOKEN: $(( secrets.GITHUB_TOKEN }}
     strategy:
@@ -34,13 +37,7 @@ jobs:
         go build -o ./phantomsocks-pcap -tags pcap
         go build -o ./phantomsocks-rawsocket -tags rawsocket
     - name: upload
-      uses: "marvinpinto/action-automatic-releases@latest"
+      uses: ncipollo/release-action@v1
       with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag:  ${{ steps.version.outputs.version }}
-        prerelease: true
-        title: "Development Build"
-        files: |
-            ./nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}.tgz 
-
-
+        artifacts: "phantomsocks-pcap,phantomsocks-original,phantomsocks-rawsocket"
+        token: ${{ secrets.GITHUB_TOKEN }}
